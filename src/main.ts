@@ -7,14 +7,19 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   // Swagger setup
-  const config = new DocumentBuilder()
-    .setTitle('iBook API')
-    .setVersion('1.0')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  const nodeEnv = configService.get<string>('NODE_ENV');
+
+  if (nodeEnv === 'development') {
+    const config = new DocumentBuilder()
+      .setTitle('iBook API')
+      .setVersion('1.0')
+      .build();
+    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, documentFactory);
+  }
 
   // Enable global validation
   app.useGlobalPipes(
@@ -26,7 +31,6 @@ async function bootstrap() {
   );
 
   // Read port from .env
-  const configService = app.get(ConfigService);
   const port = Number(configService.get<string>('APP_PORT')) || 3000;
 
   await app.listen(port);
