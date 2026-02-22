@@ -31,6 +31,8 @@
 $ npm install
 ```
 
+After all dependencies are installed, copy `.env.example` to `.env`.
+
 ## Compile and run the project
 
 ```bash
@@ -43,6 +45,10 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+Project can be accessed at [http://localhost:3000/](http://localhost:3000/).
+
+API documentation (Swagger UI) can be accessed at [http://localhost:3000/api](http://localhost:3000/api), but only when development server is running (`npm run start:dev`).
 
 ## Run tests
 
