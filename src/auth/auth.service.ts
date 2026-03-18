@@ -21,12 +21,13 @@ export class AuthService {
   ) {}
 
   async register(email: string, password: string, name: string, phone: string) {
+    // Validate password
     const policy = this.passwordValidationService.validate(password, email);
-
     if (!policy.valid) {
       throw new BadRequestException(policy.message);
     }
 
+    // Check email uniqueness
     try {
       const existing = await this.userRepository.findOne({ where: { email } });
 
@@ -40,15 +41,19 @@ export class AuthService {
       );
     }
 
+    // Create password hash
     const hashed = await hashPassword(password);
+
+    // Create user
     const user = this.userRepository.create({
       email,
       password: hashed,
       name,
       phone,
     });
-    let saved: User;
 
+    // Save user
+    let saved: User;
     try {
       saved = await this.userRepository.save(user);
     } catch (err) {
@@ -56,7 +61,10 @@ export class AuthService {
       throw new InternalServerErrorException('Database error during user save');
     }
 
+    // Generate JWT
     const access_token = await generateJWT(saved);
+
+    // Return token and user
     const { id, email: em, name: nm, phone: ph } = saved;
 
     return {
