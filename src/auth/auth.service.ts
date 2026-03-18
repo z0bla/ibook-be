@@ -3,13 +3,14 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { User } from 'src/users/entities/user.entity';
 import { PasswordValidationService } from './password-validation.service';
-import { generateJWT, hashPassword } from './auth.utils';
+import { generateJWT, hashPassword, validatePassword } from './auth.utils';
 
 @Injectable()
 export class AuthService {
@@ -57,6 +58,35 @@ export class AuthService {
 
     const access_token = await generateJWT(saved);
     const { id, email: em, name: nm, phone: ph } = saved;
+
+    return {
+      access_token,
+      user: { id, email: em, name: nm, phone: ph },
+    };
+  }
+
+  async login(email: string, password: string) {
+    // Find user by email
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Validate password
+    const valid = await validatePassword(password, user.password);
+    if (!valid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Generate JWT
+    const access_token = await generateJWT(user);
+
+    // Update date/time when user last logged in
+    user.lastLogin = new Date();
+    await this.userRepository.save(user);
+
+    // Return token and user info
+    const { id, email: em, name: nm, phone: ph } = user;
 
     return {
       access_token,
