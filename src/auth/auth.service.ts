@@ -114,4 +114,16 @@ export class AuthService {
 
     return { message: 'Logged out successfully' };
   }
+
+  async validateUser(userId: string) {
+    // Find user by ID
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      return null;
+    }
+
+    const { id, email, name, phone } = user;
+    return { id, email, name, phone };
+  }
 }
