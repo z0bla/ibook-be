@@ -101,4 +101,17 @@ export class AuthService {
       user: { id, email: em, name: nm, phone: ph },
     };
   }
+
+  async logout(userId: string) {
+    // Find user by ID
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    // Update date/time when user last logged out
+    if (user) {
+      user.lastLogout = new Date();
+      await this.userRepository.save(user);
+    }
+
+    return { message: 'Logged out successfully' };
+  }
 }
