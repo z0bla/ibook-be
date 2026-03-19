@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +15,8 @@ import { generateJWT, hashPassword, validatePassword } from './auth.utils';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -35,7 +38,7 @@ export class AuthService {
         throw new ConflictException('Email already registered');
       }
     } catch (err) {
-      console.error('Error during email lookup', err);
+      this.logger.error('Error during email lookup', err);
       throw new InternalServerErrorException(
         'Database error during email lookup',
       );
@@ -57,12 +60,14 @@ export class AuthService {
     try {
       saved = await this.userRepository.save(user);
     } catch (err) {
-      console.error('Error during user save', err);
+      this.logger.error('Error during user save', err);
       throw new InternalServerErrorException('Database error during user save');
     }
 
     // Generate JWT
     const access_token = await generateJWT(saved);
+
+    this.logger.log(`User ${email} registered successfully`);
 
     // Return token and user
     const { id, email: em, name: nm, phone: ph } = saved;
@@ -77,12 +82,14 @@ export class AuthService {
     // Find user by email
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
+      this.logger.warn(`Failed login attempt for ${email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     // Validate password
     const valid = await validatePassword(password, user.password);
     if (!valid) {
+      this.logger.warn(`Failed login attempt for ${email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -111,6 +118,8 @@ export class AuthService {
       user.lastLogout = new Date();
       await this.userRepository.save(user);
     }
+
+    this.logger.log(`User ${userId} logged out`);
 
     return { message: 'Logged out successfully' };
   }
