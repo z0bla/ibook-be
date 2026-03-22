@@ -27,11 +27,17 @@ export class User {
   @Column()
   phone: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  lastLogin: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  lastLogout: Date;
 
   // One user can have many appointments
   @OneToMany(() => Appointment, (appointment) => appointment.user)
