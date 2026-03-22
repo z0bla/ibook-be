@@ -65,7 +65,7 @@ export class AuthService {
     }
 
     // Generate JWT
-    const access_token = await generateJWT(saved);
+    const access_token = generateJWT(saved);
 
     this.logger.log(`User ${email} registered successfully`);
 
@@ -94,7 +94,7 @@ export class AuthService {
     }
 
     // Generate JWT
-    const access_token = await generateJWT(user);
+    const access_token = generateJWT(user);
 
     // Update date/time when user last logged in
     user.lastLogin = new Date();
