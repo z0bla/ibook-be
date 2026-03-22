@@ -10,18 +10,15 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Swagger setup
-  const nodeEnv = configService.get<string>('NODE_ENV');
-
-  if (nodeEnv === 'development') {
+  if (configService.get<string>('NODE_ENV') === 'development') {
     const config = new DocumentBuilder()
       .setTitle('iBook API')
       .setVersion('1.0')
       .build();
-    const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, documentFactory);
+    SwaggerModule.setup('api', app, SwaggerModule.createDocument(app, config));
   }
 
-  // Enable global validation
+  // Global validation
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -30,9 +27,14 @@ async function bootstrap() {
     }),
   );
 
-  // Read port from .env
+  // Port iz .env ili default 3000
   const port = Number(configService.get<string>('APP_PORT')) || 3000;
 
   await app.listen(port);
+  console.log(`🚀 Nest application running on port ${port}`);
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  console.error('Nest application failed to start', err);
+  process.exit(1);
+});

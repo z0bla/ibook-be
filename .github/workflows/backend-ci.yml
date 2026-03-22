@@ -1,0 +1,39 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [development, main]
+  pull_request:
+    branches: [development, main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout koda
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 3️⃣ Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4️⃣ TypeScript check
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      # 5️⃣ ESLint check
+      - name: ESLint check
+        run: npm run lint
+
+      # 6️⃣ Run Jest tests
+      - name: Run tests
+        run: npm test
