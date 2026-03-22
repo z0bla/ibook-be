@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -29,5 +29,11 @@ export class AuthController {
   // @UseGuards(JwtAuthGuard) // TODO: Uncomment after task 1.5
   async logout(@CurrentUser() user: User) {
     return await this.authService.logout(user.id);
+  }
+
+  @Get('me')
+  // @UseGuards(JwtAuthGuard) // TODO: Uncomment after task 1.5
+  getCurrentUser(@CurrentUser() user: User) {
+    return user;
   }
 }
