@@ -58,7 +58,30 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Log in user' })
-  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    schema: {
+      type: 'object',
+      properties: {
+        access_token: {
+          type: 'string',
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
+        user: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '550e8400-e29b-41d4-a716-446655440000',
+            },
+            email: { type: 'string', example: 'john@example.com' },
+            name: { type: 'string', example: 'John Doe' },
+          },
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async login(@Body() loginDto: LoginDto) {
