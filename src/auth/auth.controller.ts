@@ -52,6 +52,10 @@ export class AuthController {
   }
 
   @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get user profile' })
+  @ApiResponse({ status: 200, description: 'Returns user data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   // @UseGuards(JwtAuthGuard) // TODO: Uncomment after task 1.5
   getCurrentUser(@CurrentUser() user: User) {
     return user;
