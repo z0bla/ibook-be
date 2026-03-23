@@ -19,7 +19,31 @@ export class AuthController {
   @Post('register')
   @HttpCode(201)
   @ApiOperation({ summary: 'Register new user' })
-  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        access_token: {
+          type: 'string',
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
+        user: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '550e8400-e29b-41d4-a716-446655440000',
+            },
+            email: { type: 'string', example: 'john@example.com' },
+            name: { type: 'string', example: 'John Doe' },
+            phone: { type: 'string', example: '+1-555-0123' },
+          },
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
