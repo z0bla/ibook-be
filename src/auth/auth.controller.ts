@@ -91,7 +91,16 @@ export class AuthController {
   @Post('logout')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Log out user' })
-  @ApiResponse({ status: 200, description: 'Logout successful' })
+  @ApiResponse({
+    status: 200,
+    description: 'Logout successful',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Logged out successfully' },
+      },
+    },
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   // @UseGuards(JwtAuthGuard) // TODO: Uncomment after task 1.5
   async logout(@CurrentUser() user: User) {
