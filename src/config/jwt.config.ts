@@ -1,8 +1,8 @@
-import { SignOptions } from 'jsonwebtoken';
+import { registerAs } from '@nestjs/config';
 
-export const jwtConfig: { secret: string; signOptions: SignOptions } = {
-  secret: process.env.JWT_SECRET as string,
+export default registerAs('jwt', () => ({
+  secret: process.env.JWT_SECRET,
   signOptions: {
-    expiresIn: '24h',
+    expiresIn: process.env.JWT_EXPIRATION || '24h',
   },
-};
+}));
