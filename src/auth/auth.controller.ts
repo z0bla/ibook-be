@@ -110,7 +110,24 @@ export class AuthController {
   @Get('me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user profile' })
-  @ApiResponse({ status: 200, description: 'Returns user data' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns user data',
+    schema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          example: '550e8400-e29b-41d4-a716-446655440000',
+        },
+        email: { type: 'string', example: 'john@example.com' },
+        name: { type: 'string', example: 'John Doe' },
+        phone: { type: 'string', example: '+1-555-0123' },
+        createdAt: { type: 'string', example: '2024-01-15T10:30:00Z' },
+        updatedAt: { type: 'string', example: '2024-01-15T10:30:00Z' },
+      },
+    },
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   // @UseGuards(JwtAuthGuard) // TODO: Uncomment after task 1.5
   getCurrentUser(@CurrentUser() user: User) {
