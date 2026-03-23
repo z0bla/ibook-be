@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import databaseConfig from './config/database.config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import databaseConfig from './config/database.config';
     // Database connection
     DatabaseModule,
     // Other modules will be added here
+    AuthModule,
   ],
   controllers: [],
   providers: [],
