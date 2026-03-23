@@ -28,6 +28,10 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Log in user' })
+  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto.email, loginDto.password);
   }
