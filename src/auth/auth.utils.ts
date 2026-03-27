@@ -1,7 +1,6 @@
 // src/auth/auth.utils.ts
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { jwtConfig } from '../config/jwt.config';
 import { User } from '../users/entities/user.entity';
 
 const SALT_ROUNDS = 10;
@@ -36,13 +35,18 @@ export async function validatePassword(
  * @param user - user entity
  */
 export function generateJWT(user: User): string {
-  try {
-    const payload = {
-      sub: user.id,
-      email: user.email,
-    };
+  const secret = process.env.JWT_SECRET;
 
-    return jwt.sign(payload, jwtConfig.secret, jwtConfig.signOptions);
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not defined');
+  }
+
+  const expiresIn = (process.env.JWT_EXPIRATION ||
+    '24h') as jwt.SignOptions['expiresIn'];
+  const payload = { sub: user.id, email: user.email };
+
+  try {
+    return jwt.sign(payload, secret, { expiresIn });
   } catch {
     throw new Error('Error generating JWT token');
   }
