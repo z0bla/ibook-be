@@ -141,4 +141,13 @@ export class AuthController {
   getCurrentUser(@CurrentUser() user: User) {
     return user;
   }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGurad)
+  getProfile(@CurrentUser() user: User) {
+    return {
+      message: 'This is protected',
+      user: user,
+    };
+  }
 }
