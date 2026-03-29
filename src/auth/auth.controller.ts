@@ -1,15 +1,23 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from 'src/users/entities/user.entity';
-import { CurrentUser } from './decorators/current-user.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGurad } from './guards/jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -102,7 +110,7 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  // @UseGuards(JwtAuthGuard) // TODO: Uncomment after task 1.5
+  @UseGuards(JwtAuthGurad)
   async logout(@CurrentUser() user: User) {
     return await this.authService.logout(user.id);
   }
@@ -129,8 +137,17 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  // @UseGuards(JwtAuthGuard) // TODO: Uncomment after task 1.5
+  @UseGuards(JwtAuthGurad)
   getCurrentUser(@CurrentUser() user: User) {
     return user;
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGurad)
+  getProfile(@CurrentUser() user: User) {
+    return {
+      message: 'This is protected',
+      user: user,
+    };
   }
 }
