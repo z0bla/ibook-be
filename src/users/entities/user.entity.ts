@@ -13,37 +13,37 @@ import { Salon } from '../../salons/entities/salon.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
   @Column()
-  password: string;
+  password!: string;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  phone: string;
+  phone!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
-  lastLogin: Date;
+  lastLogin!: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
-  lastLogout: Date;
+  lastLogout!: Date;
 
   // One user can have many appointments
   @OneToMany(() => Appointment, (appointment) => appointment.user)
-  appointments: Appointment[];
+  appointments!: Appointment[];
 
   // Many users can have visited many salons
   @ManyToMany(() => Salon, (salon) => salon.users)
-  previousSalons: Salon[];
+  previousSalons!: Salon[];
 }

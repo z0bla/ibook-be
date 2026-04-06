@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class AuthResponseDto {
   @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
-  access_token: string;
+  access_token!: string;
 
   @ApiProperty({
     example: {
@@ -12,7 +12,7 @@ export class AuthResponseDto {
       phone: '+1-555-0123',
     },
   })
-  user: {
+  user!: {
     id: string;
     email: string;
     name: string;

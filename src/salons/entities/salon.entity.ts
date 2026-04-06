@@ -18,53 +18,53 @@ import { User } from '../../users/entities/user.entity';
 @Entity('salons')
 export class Salon {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  address: string;
+  address!: string;
 
   @Column()
-  phone: string;
+  phone!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description!: string;
 
   @Column({ type: 'decimal', precision: 2, scale: 1, default: 0 })
-  rating: number;
+  rating!: number;
 
   @Column({ default: 0 })
-  reviewCount: number;
+  reviewCount!: number;
 
   @Column({ nullable: true })
-  image: string;
+  image!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // Many salons belong to one category
   @ManyToOne(() => Category, (category) => category.salons)
-  category: Category;
+  category!: Category;
 
   // One salon has many operating hours
   @OneToMany(() => OperatingHours, (operatingHours) => operatingHours.salon)
-  operatingHours: OperatingHours[];
+  operatingHours!: OperatingHours[];
 
   // One salon has many services
   @OneToMany(() => Service, (service) => service.salon)
-  services: Service[];
+  services!: Service[];
 
   // One salon has many appointments
   @OneToMany(() => Appointment, (appointment) => appointment.salon)
-  appointments: Appointment[];
+  appointments!: Appointment[];
 
   // Many users can have visited many salons
   @ManyToMany(() => User, (user) => user.previousSalons)
   @JoinTable()
-  users: User[];
+  users!: User[];
 }

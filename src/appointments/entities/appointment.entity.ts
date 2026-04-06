@@ -14,38 +14,38 @@ import { AppointmentStatusEnum } from '../../common/enums/appointment-status.enu
 @Entity('appointments')
 export class Appointment {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  appointmentDate: Date;
+  appointmentDate!: Date;
 
   @Column({ type: 'time' })
-  appointmentTime: string;
+  appointmentTime!: string;
 
   @Column()
-  duration: number; // copied from service
+  duration!: number; // copied from service
 
   @Column({
     type: 'enum',
     enum: AppointmentStatusEnum,
     default: AppointmentStatusEnum.BOOKED,
   })
-  status: AppointmentStatusEnum;
+  status!: AppointmentStatusEnum;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // Relationships
 
   @ManyToOne(() => User, (user) => user.appointments)
-  user: User;
+  user!: User;
 
   @ManyToOne(() => Salon, (salon) => salon.appointments)
-  salon: Salon;
+  salon!: Salon;
 
   @ManyToOne(() => Service, (service) => service.appointments)
-  service: Service;
+  service!: Service;
 }
