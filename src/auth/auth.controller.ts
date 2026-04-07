@@ -9,7 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import {
   ApiBearerAuth,
