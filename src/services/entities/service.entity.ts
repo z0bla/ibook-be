@@ -12,25 +12,25 @@ import { Appointment } from '../../appointments/entities/appointment.entity';
 @Entity('services')
 export class Service {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  duration: number; // in minutes
+  duration!: number; // in minutes
 
   @Column({ type: 'decimal', precision: 6, scale: 2 })
-  price: number;
+  price!: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   // Many services belong to one salon
   @ManyToOne(() => Salon, (salon) => salon.services)
-  salon: Salon;
+  salon!: Salon;
 
   // One service can have many appointments
   @OneToMany(() => Appointment, (appointment) => appointment.service)
-  appointments: Appointment[];
+  appointments!: Appointment[];
 }
