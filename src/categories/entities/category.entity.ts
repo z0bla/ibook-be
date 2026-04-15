@@ -10,21 +10,21 @@ import { Salon } from '../../salons/entities/salon.entity';
 @Entity('categories')
 export class Category {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  name: string;
+  name!: string;
 
   @Column()
-  icon: string; // icon name from React Native Paper
+  icon!: string; // icon name from React Native Paper
 
   @Column({ nullable: true })
-  description: string;
+  description!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   // One category can have many salons
   @OneToMany(() => Salon, (salon) => salon.category)
-  salons: Salon[];
+  salons!: Salon[];
 }

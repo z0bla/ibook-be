@@ -1,34 +1,25 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Salon } from '../../salons/entities/salon.entity';
 import { DayEnum } from '../../common/enums/day.enum';
 
 @Entity('operating_hours')
 export class OperatingHours {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'enum', enum: DayEnum })
-  day: DayEnum;
+  day!: DayEnum;
 
   @Column({ type: 'time' })
-  openTime: string;
+  openTime!: string;
 
   @Column({ type: 'time' })
-  closeTime: string;
+  closeTime!: string;
 
   @Column({ default: false })
-  isClosed: boolean;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  isClosed!: boolean;
 
   // Many operating hours belong to one salon
-  @ManyToOne(() => Salon, (salon) => salon.operatingHours)
-  salon: Salon;
+  @ManyToOne(() => Salon, (salon) => salon.operatingHours, { nullable: false })
+  salon!: Salon;
 }

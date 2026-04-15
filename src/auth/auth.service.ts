@@ -9,7 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { PasswordValidationService } from './password-validation.service';
 import { generateJWT, hashPassword, validatePassword } from './auth.utils';
 
