@@ -5,6 +5,7 @@ import databaseConfig from './config/database.config';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { SalonsModule } from './salons/salons.module';
+import { ServicesModule } from './services/services.module';
 import jwtConfig from './config/jwt.config';
 
 @Module({
@@ -17,6 +18,7 @@ import jwtConfig from './config/jwt.config';
     AuthModule,
     CategoriesModule,
     SalonsModule,
+    ServicesModule,
   ],
 })
 export class AppModule {}
