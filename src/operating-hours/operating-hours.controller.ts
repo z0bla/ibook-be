@@ -46,14 +46,4 @@ export class OperatingHoursController {
   markOpen(@Param('id') id: string, @Body() hours: MarkOpenDto) {
     return this.OperatingHoursService.markOpen(id, hours);
   }
-  @Post(':id/isopen')
-  @ApiOperation({ summary: 'Check if salon is opened' })
-  @ApiResponse({
-    status: 204,
-    description: 'Returned boolean for the state of salon',
-  })
-  @ApiResponse({ status: 404, description: 'Cannot find salon' })
-  closed(@Param('id') id: string, @Body() date: Date) {
-    return this.OperatingHoursService.isOpen(id, date);
-  }
 }
