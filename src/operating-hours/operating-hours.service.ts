@@ -11,6 +11,7 @@ import {
   UpdateOperatingHoursDto,
 } from './dto/update-operating-hours.dto';
 import { OperatingHours } from './entities/operating-hours.entity';
+import { DayEnum } from '../common/enums/day.enum';
 
 @Injectable()
 export class OperatingHoursService {
@@ -21,7 +22,7 @@ export class OperatingHoursService {
     private readonly salonService: SalonsService,
   ) {}
   async getBySalonId(salonId: string): Promise<OperatingHours[]> {
-    let salon = await this.salonService.findById(salonId);
+    const salon = await this.salonService.findById(salonId);
     return salon.operatingHours;
   }
   trimSeconds(time: string): string {
@@ -29,7 +30,7 @@ export class OperatingHoursService {
     return `${hours}:${minutes}`;
   }
   validateTimes(openTime: string, closeTime: string) {
-    let testRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    const testRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (openTime.split(':')[0].length === 1) {
       openTime = `0${openTime}`;
     }
@@ -65,7 +66,7 @@ export class OperatingHoursService {
     if (hours.closeTime) {
       prev.closeTime = hours.closeTime;
     }
-    this.hoursRepository.save(prev);
+    await this.hoursRepository.save(prev);
     return prev;
   }
   async markClosed(hoursId: string): Promise<OperatingHours> {
@@ -76,7 +77,7 @@ export class OperatingHoursService {
       throw new NotFoundException('Invalid Operating Hours Id');
     }
     hours.isClosed = true;
-    this.hoursRepository.save(hours);
+    await this.hoursRepository.save(hours);
     return hours;
   }
   async markOpen(hoursId: string, hours: MarkOpenDto): Promise<OperatingHours> {
@@ -90,14 +91,14 @@ export class OperatingHoursService {
     record.openTime = hours.openTime;
     record.closeTime = hours.closeTime;
     record.isClosed = false;
-    this.hoursRepository.save(record);
+    await this.hoursRepository.save(record);
     return record;
   }
   async isOpen(salonId: string, dateTime: Date): Promise<boolean> {
-    let hours = dateTime.getHours();
-    let minutes = dateTime.getMinutes();
-    let time: string = `${hours}:${minutes}`;
-    let days: string[] = [
+    const hours = dateTime.getHours();
+    const minutes = dateTime.getMinutes();
+    const time: string = `${hours}:${minutes}`;
+    const days: string[] = [
       'Sunday',
       'Monday',
       'Tuesday',
@@ -112,7 +113,7 @@ export class OperatingHoursService {
       throw new NotFoundException('Salon Id is not valid!');
     }
     const findDay = salon.operatingHours.find((rec) => {
-      return rec.day == day;
+      return rec.day == DayEnum[day.toUpperCase()];
     });
     if (!findDay) {
       throw new NotFoundException(`Cannot find the hours record for ${day}`);
