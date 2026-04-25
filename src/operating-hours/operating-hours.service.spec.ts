@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { SalonsService } from '../salons/salons.service';
 import { OperatingHoursService } from './operating-hours.service';
 
 describe('OperatingHoursService', () => {
@@ -10,6 +11,10 @@ describe('OperatingHoursService', () => {
         OperatingHoursService,
         {
           provide: 'OperatingHoursRepository',
+          useValue: {},
+        },
+        {
+          provide: SalonsService,
           useValue: {},
         },
       ],
