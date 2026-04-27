@@ -32,7 +32,7 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Get all categories with salon counts' })
   @ApiResponse({
     status: 200,
-    description: 'List of categories',
+    description: 'List of categories with salon counts',
   })
   async findAll(): Promise<Category[]> {
     return this.categoriesService.findAllWithSalonCount();
