@@ -18,14 +18,13 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all categories' })
+  @ApiOperation({ summary: 'Get all categories with salon counts' })
   @ApiResponse({
     status: 200,
     description: 'List of categories',
-    type: [Category],
   })
   async findAll(): Promise<Category[]> {
-    return this.categoriesService.findAll();
+    return this.categoriesService.findAllWithSalonCount();
   }
 
   @Get(':id')
