@@ -55,13 +55,25 @@ export class SalonsService {
     return salon;
   }
 
-  async findByCategory(categoryId: string): Promise<Salon[]> {
-    return this.salonRepository.find({
-      where: {
-        category: { id: categoryId },
-      },
+  async findByCategory(
+    categoryId: string,
+    sortBy: 'rating' | 'name' = 'rating',
+    limit = 50,
+    offset = 0,
+  ): Promise<{ category: any; salons: Salon[]; totalCount: number }> {
+    // Get category first to validate
+    const category = await this.categoriesService.findById(categoryId);
+
+    // Query salons with relations
+    const [salons, total] = await this.salonRepository.findAndCount({
+      where: { category: { id: categoryId } },
       relations: ['category', 'services', 'operatingHours'],
+      order: sortBy === 'rating' ? { rating: 'DESC' } : { name: 'ASC' },
+      skip: offset,
+      take: limit,
     });
+
+    return { category, salons, totalCount: total };
   }
 
   async create(createSalonDto: CreateSalonDto): Promise<Salon> {
