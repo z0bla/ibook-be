@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
+import { SalonsService } from '../salons/salons.service';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;
@@ -9,6 +10,11 @@ describe('CategoriesController', () => {
     findAll: jest.fn(),
     findById: jest.fn(),
     create: jest.fn(),
+    findAllWithSalonCount: jest.fn(),
+  };
+
+  const mockSalonsService = {
+    findByCategory: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -18,6 +24,10 @@ describe('CategoriesController', () => {
         {
           provide: CategoriesService,
           useValue: mockCategoriesService,
+        },
+        {
+          provide: SalonsService,
+          useValue: mockSalonsService,
         },
       ],
     }).compile();
