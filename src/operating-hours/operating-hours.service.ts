@@ -37,7 +37,6 @@ export class OperatingHoursService {
     if (closeTime.split(':')[0].length === 1) {
       closeTime = `0${closeTime}`;
     }
-    console.log(closeTime);
     if (!testRegex.test(openTime) || !testRegex.test(closeTime)) {
       throw new BadRequestException('Time format must be HH:MM!');
     }

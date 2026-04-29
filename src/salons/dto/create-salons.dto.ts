@@ -1,56 +1,61 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsUUID,
-  IsOptional,
-  IsUrl,
-  IsArray,
-  ValidateNested,
-  Matches,
-  IsEnum,
-} from 'class-validator';
 import { Type } from 'class-transformer';
-import { DayEnum } from '../../common/enums/day.enum';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  Matches,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 
-// DTO za operating hours
-export class CreateOperatingHoursDto {
-  @IsEnum(DayEnum)
-  day!: DayEnum;
-
-  @Matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-  openTime!: string;
-
-  @Matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-  closeTime!: string;
-}
-
-// Glavni DTO
 export class CreateSalonDto {
   @IsUUID()
-  categoryId!: string;
+  categoryId: string;
 
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  @MinLength(3)
+  name: string;
 
   @IsString()
   @IsNotEmpty()
-  address!: string;
+  address: string;
 
   @IsString()
   @IsNotEmpty()
-  phone!: string;
+  phone: string;
 
   @IsString()
   @IsNotEmpty()
-  description!: string;
+  description: string;
 
   @IsOptional()
   @IsUrl()
   image?: string;
-
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateOperatingHoursDto)
-  operatingHours!: CreateOperatingHoursDto[];
+  @Type(() => OperatingHoursDto)
+  operatingHours: OperatingHoursDto[];
+}
+
+export class OperatingHoursDto {
+  @IsString()
+  @Matches(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$/)
+  day: string;
+
+  @IsString()
+  @Matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+  openTime: string;
+
+  @IsString()
+  @Matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+  closeTime: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isClosed: boolean;
 }
