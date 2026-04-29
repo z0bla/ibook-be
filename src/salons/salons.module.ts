@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Salon } from './entities/salon.entity';
@@ -11,7 +11,7 @@ import { CategoriesModule } from '../categories/categories.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Salon, OperatingHours]),
-    CategoriesModule,
+    forwardRef(() => CategoriesModule),
   ],
   controllers: [SalonsController],
   providers: [SalonsService],

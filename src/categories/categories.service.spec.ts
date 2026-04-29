@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesService } from './categories.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
+import { Salon } from '../salons/entities/salon.entity';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
@@ -13,6 +14,10 @@ describe('CategoriesService', () => {
     save: jest.fn(),
   };
 
+  const mockSalonRepository = {
+    count: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -20,6 +25,10 @@ describe('CategoriesService', () => {
         {
           provide: getRepositoryToken(Category),
           useValue: mockCategoryRepository,
+        },
+        {
+          provide: getRepositoryToken(Salon),
+          useValue: mockSalonRepository,
         },
       ],
     }).compile();
