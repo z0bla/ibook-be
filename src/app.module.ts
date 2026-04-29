@@ -7,6 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { SalonsModule } from './salons/salons.module';
 import { ServicesModule } from './services/services.module';
 import jwtConfig from './config/jwt.config';
+import { OperatingHoursModule } from './operating-hours/operating-hours.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import jwtConfig from './config/jwt.config';
     CategoriesModule,
     SalonsModule,
     ServicesModule,
+    OperatingHoursModule,
   ],
 })
 export class AppModule {}
