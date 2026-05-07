@@ -8,6 +8,8 @@ import { SalonsModule } from './salons/salons.module';
 import { ServicesModule } from './services/services.module';
 import jwtConfig from './config/jwt.config';
 import { OperatingHoursModule } from './operating-hours/operating-hours.module';
+import { AppointmentsService } from './appointments/appointments.service';
+import { AppointmentsModule } from './appointments/appointments.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { OperatingHoursModule } from './operating-hours/operating-hours.module';
     SalonsModule,
     ServicesModule,
     OperatingHoursModule,
+    AppointmentsModule,
   ],
+  providers: [AppointmentsService],
 })
 export class AppModule {}
