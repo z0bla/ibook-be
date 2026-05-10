@@ -28,6 +28,63 @@ export const mockedCategoryObject: Category = {
   createdAt: new Date(),
   salons: [],
 };
+const ohMon: OperatingHours = {
+  id: '1',
+  day: DayEnum.MONDAY,
+  openTime: '07:00:00',
+  closeTime: '15:00:00',
+  isClosed: false,
+  salon: new Salon(),
+};
+const ohTue: OperatingHours = {
+  id: '2',
+  day: DayEnum.TUESDAY,
+  openTime: '07:00:00',
+  closeTime: '15:00:00',
+  isClosed: false,
+  salon: new Salon(),
+};
+const ohWed: OperatingHours = {
+  id: '3',
+  day: DayEnum.WEDNESDAY,
+  openTime: '07:00:00',
+  closeTime: '15:00:00',
+  isClosed: false,
+  salon: new Salon(),
+};
+const ohThu: OperatingHours = {
+  id: '4',
+  day: DayEnum.THURSDAY,
+  openTime: '07:00:00',
+  closeTime: '15:00:00',
+  isClosed: false,
+  salon: new Salon(),
+};
+const ohFri: OperatingHours = {
+  id: '5',
+  day: DayEnum.FRIDAY,
+  openTime: '07:00:00',
+  closeTime: '15:00:00',
+  isClosed: false,
+  salon: new Salon(),
+};
+const ohSat: OperatingHours = {
+  id: '6',
+  day: DayEnum.SATURDAY,
+  openTime: '08:00:00',
+  closeTime: '12:00:00',
+  isClosed: false,
+  salon: new Salon(),
+};
+const ohSun: OperatingHours = {
+  id: '7',
+  day: DayEnum.SUNDAY,
+  openTime: '00:00:00',
+  closeTime: '00:00:00',
+  isClosed: true,
+  salon: new Salon(),
+};
+
 export const mockedSalonObject: Salon = {
   id: 'salonid',
   name: 'name',
@@ -40,12 +97,12 @@ export const mockedSalonObject: Salon = {
   createdAt: new Date(),
   updatedAt: new Date(),
   category: mockedCategoryObject,
-  operatingHours: [],
+  operatingHours: [ohMon, ohTue, ohWed, ohThu, ohFri, ohSat, ohSun],
   services: [],
   users: [],
   appointments: [],
 };
-const app1: Appointment = {
+export const app1: Appointment = {
   id: '1',
   appointmentDate: new Date('2026-03-08T10:00:00'),
   appointmentTime: '10:00:00',
@@ -57,7 +114,7 @@ const app1: Appointment = {
   salon: mockedSalonObject,
   service: new Service(),
 };
-const app2: Appointment = {
+export const app2: Appointment = {
   id: '2',
   appointmentDate: new Date('2026-03-08T10:30:00'),
   appointmentTime: '10:30:00',
@@ -69,7 +126,7 @@ const app2: Appointment = {
   salon: mockedSalonObject,
   service: new Service(),
 };
-const app3: Appointment = {
+export const app3: Appointment = {
   id: '3',
   appointmentDate: new Date('2026-03-08T11:00:00'),
   appointmentTime: '11:00:00',
@@ -81,7 +138,7 @@ const app3: Appointment = {
   salon: mockedSalonObject,
   service: new Service(),
 };
-const app4: Appointment = {
+export const app4: Appointment = {
   id: '4',
   appointmentDate: new Date('2026-03-08T11:00:00'),
   appointmentTime: '11:00:00',
@@ -93,7 +150,7 @@ const app4: Appointment = {
   salon: mockedSalonObject,
   service: new Service(),
 };
-const app5: Appointment = {
+export const app5: Appointment = {
   id: '5',
   appointmentDate: new Date('2026-03-08T11:00:00'),
   appointmentTime: '11:00:00',
@@ -105,7 +162,7 @@ const app5: Appointment = {
   salon: mockedSalonObject,
   service: new Service(),
 };
-const app6: Appointment = {
+export const app6: Appointment = {
   id: '6',
   appointmentDate: new Date('2026-03-08T11:00:00'),
   appointmentTime: '11:00:00',

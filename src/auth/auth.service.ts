@@ -53,6 +53,7 @@ export class AuthService {
       password: hashed,
       name,
       phone,
+      appointments: [],
     });
 
     // Save user

@@ -40,12 +40,14 @@ export class Appointment {
 
   // Relationships
 
-  @ManyToOne(() => User, (user) => user.appointments)
+  @ManyToOne(() => User, (user) => user.appointments, { cascade: true })
   user!: User;
 
   @ManyToOne(() => Salon, (salon) => salon.appointments)
   salon!: Salon;
 
-  @ManyToOne(() => Service, (service) => service.appointments)
+  @ManyToOne(() => Service, (service) => service.appointments, {
+    cascade: true,
+  })
   service!: Service;
 }

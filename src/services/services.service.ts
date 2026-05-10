@@ -18,14 +18,14 @@ export class ServicesService {
   async findBySalon(salonId: string): Promise<Service[]> {
     return this.serviceRepository.find({
       where: { salon: { id: salonId } },
-      relations: ['salon'],
+      relations: ['salon', 'appointments'],
     });
   }
 
   async findById(id: string): Promise<Service> {
     const service = await this.serviceRepository.findOne({
       where: { id },
-      relations: ['salon'],
+      relations: ['salon', 'appointments'],
     });
 
     if (!service) {
@@ -42,6 +42,7 @@ export class ServicesService {
       name: dto.name,
       duration: dto.duration,
       price: dto.price,
+      appointments: [],
       salon,
     });
 
