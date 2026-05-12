@@ -32,12 +32,28 @@ export class AppointmentsService {
   ): Promise<Appointment> {
     //Ucitavanje salona, servisa i korisnika
     const salon = await this.salonService.findById(salonId);
-
+    if (!salon) {
+      throw new NotFoundException('Salon not found');
+    }
     const service = await this.servicesService.findById(serviceId);
+    if (!service) {
+      throw new NotFoundException('Service not found');
+    }
 
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('Cannot find user!');
+    }
+    const checkHours = await this.checkSalonOperatingHours(
+      salonId,
+      appointmentDate,
+      appointmentTime,
+      service.duration,
+    );
+    if (!checkHours) {
+      throw new ConflictException(
+        'Appointment time must be in operating hours',
+      );
     }
     //Provjera preklapanja
     const overlapping = await this.checkOverlap(
@@ -49,6 +65,22 @@ export class AppointmentsService {
     if (overlapping) {
       throw new ConflictException(
         'This appointment overlaps with an existing one!',
+      );
+    }
+    const concurrent = await this.checkConcurrentLimit(
+      serviceId,
+      appointmentDate,
+      appointmentTime,
+    );
+    if (concurrent) {
+      throw new ConflictException(
+        'Maximum number of concurrent appointments reached',
+      );
+    }
+    const userLimit = await this.checkUserAppointmentLimit(userId);
+    if (userLimit) {
+      throw new ConflictException(
+        'Maximum number of appointments per user reached',
       );
     }
     //Kreiranje appointment objekta
@@ -65,6 +97,13 @@ export class AppointmentsService {
     await this.appointmentRepository.save(newApp);
     return newApp;
   }
+  async findById(id: string): Promise<Appointment> {
+    const app = await this.appointmentRepository.findOne({ where: { id } });
+    if (!app) {
+      throw new NotFoundException('appointment not found!');
+    }
+    return app;
+  }
   //Funkcija za provjeru preklapanja
   async checkOverlap(
     serviceId: string,
@@ -72,15 +111,15 @@ export class AppointmentsService {
     appointmentTime: string,
     duration: number,
   ): Promise<boolean> {
-    //Ucitavanje servisa
-    const service = await this.servicesService.findById(serviceId);
-    if (!service) {
-      throw new NotFoundException('Cannot find service!');
-    }
     //Racunanje kraja termina
     const endTime = this.calculateEndTime(appointmentTime, duration);
     //Filtriranje termina koji vec postoje za ovaj dan
-    const appointments = service.appointments.filter((app) => {
+    const apps = await this.appointmentRepository.find({
+      relations: { service: true },
+      where: { service: { id: serviceId } },
+    });
+    if (apps.length < 1) return false;
+    const appointments = apps.filter((app) => {
       return (
         appointmentDate.getFullYear() === app.appointmentDate.getFullYear() &&
         appointmentDate.getMonth() === app.appointmentDate.getMonth() &&
@@ -107,18 +146,24 @@ export class AppointmentsService {
   ): Promise<boolean> {
     //Postavljanje limita na 5
     const concurrentLimit = 5;
-    //Ucitavanje servisa
-    const service = await this.servicesService.findById(serviceId);
-    if (!service) {
-      throw new NotFoundException('Cannot find service!');
-    }
     //Filtriranje termina sa istim pocetnim vremenom za isti dan
-    const appointments = service.appointments.filter((app) => {
+    const apps = await this.appointmentRepository.find({
+      relations: { service: true },
+      where: { service: { id: serviceId } },
+    });
+    if (apps.length < 1) return false;
+    //Funkcija za uklanjanje sekundi koje se dobijaju iz baze
+    function removeZeros(inp: string): string {
+      const [hh, mm] = inp.split(':', 2);
+      return `${hh}:${mm}`;
+    }
+
+    const appointments = apps.filter((app) => {
       return (
         appointmentDate.getFullYear() === app.appointmentDate.getFullYear() &&
         appointmentDate.getMonth() === app.appointmentDate.getMonth() &&
         appointmentDate.getDate() === app.appointmentDate.getDate() &&
-        appointmentTime === app.appointmentTime &&
+        removeZeros(appointmentTime) === removeZeros(app.appointmentTime) &&
         app.status === AppointmentStatusEnum.BOOKED
       );
     });
@@ -129,13 +174,14 @@ export class AppointmentsService {
   async checkUserAppointmentLimit(userId: string): Promise<boolean> {
     //Postavljanje limita na 10
     const userLimit: number = 10;
-    //Ucitavanje korisnika
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException('Cannot find user!');
-    }
+
     //Filtriranje bukiranih termina od ovog korisnika
-    const appointments = user.appointments.filter((app) => {
+    const apps = await this.appointmentRepository.find({
+      relations: { user: true },
+      where: { user: { id: userId } },
+    });
+    if (apps.length < 1) return false;
+    const appointments = apps.filter((app) => {
       return app.status === AppointmentStatusEnum.BOOKED;
     });
     //Ako korisnik ima bukiranih termina >= od limita, vraca true

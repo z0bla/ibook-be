@@ -13,12 +13,16 @@ import { Service } from '../services/entities/service.entity';
 import { Category } from '../categories/entities/category.entity';
 import { AppointmentStatusEnum } from '../common/enums/appointment-status.enum';
 import {
+  app1,
+  app2,
+  app3,
+  app4,
+  app5,
+  app6,
   mockedSalonObject,
   mockedSalonObjectWithOpHours,
   mockedServiceObject,
-  mockedServiceObjectWithConcurrentLimit,
   mockedUserObject,
-  mockedUserObjectWithAppLimitExceeded,
 } from '../__tests__/fixtures/mockedEntityObjects';
 
 describe('AppointmentsService', () => {
@@ -26,6 +30,7 @@ describe('AppointmentsService', () => {
   let salonService: SalonsService;
   let servicesService: ServicesService;
   let userRepository: Repository<User>;
+  let appointmentRepository: Repository<Appointment>;
 
   const appointmentRepositoryToken = getRepositoryToken(Appointment);
   const userRepositoryToken = getRepositoryToken(User);
@@ -56,6 +61,12 @@ describe('AppointmentsService', () => {
     save: jest.fn((dto) => {
       return dto as Appointment;
     }),
+    findOne: jest.fn(() => {
+      return app1;
+    }),
+    find: jest.fn(() => {
+      return app1;
+    }),
   };
 
   beforeEach(async () => {
@@ -81,6 +92,9 @@ describe('AppointmentsService', () => {
     salonService = module.get<SalonsService>(SalonsService);
     servicesService = module.get<ServicesService>(ServicesService);
     userRepository = module.get<Repository<User>>(userRepositoryToken);
+    appointmentRepository = module.get<Repository<Appointment>>(
+      appointmentRepositoryToken,
+    );
   });
 
   afterEach(() => {
@@ -93,19 +107,23 @@ describe('AppointmentsService', () => {
   describe('create Appointment', () => {
     describe('throwing exceptions', () => {
       it('should throw not found exception', async () => {
+        jest.spyOn(salonService, 'findById').mockImplementationOnce(jest.fn());
         try {
           await service.createAppointment('1', '2', '3', new Date(), '13:00');
         } catch (e) {
           if (e instanceof Error) {
-            expect(e.message).toEqual('Salon 2 not found');
+            expect(e.message).toEqual('Salon not found');
           } else {
-            expect(e).toEqual('Salon 2 not found');
+            expect(e).toEqual('Salon not found');
           }
         }
         try {
           jest
             .spyOn(salonService, 'findById')
             .mockResolvedValueOnce(new Salon());
+          jest
+            .spyOn(servicesService, 'findById')
+            .mockImplementationOnce(jest.fn());
           await service.createAppointment('1', '2', '3', new Date(), '13:00');
         } catch (e) {
           if (e instanceof Error) {
@@ -121,6 +139,9 @@ describe('AppointmentsService', () => {
           jest
             .spyOn(servicesService, 'findById')
             .mockResolvedValueOnce(new Service());
+          jest
+            .spyOn(userRepository, 'findOne')
+            .mockImplementationOnce(jest.fn());
           await service.createAppointment('1', '2', '3', new Date(), '13:00');
         } catch (e) {
           if (e instanceof Error) {
@@ -141,6 +162,32 @@ describe('AppointmentsService', () => {
           jest
             .spyOn(userRepository, 'findOne')
             .mockResolvedValueOnce(new User());
+          jest
+            .spyOn(service, 'checkSalonOperatingHours')
+            .mockResolvedValueOnce(false);
+          await service.createAppointment('1', '2', '3', new Date(), '13:00');
+        } catch (e) {
+          if (e instanceof Error) {
+            expect(e.message).toEqual(
+              'Appointment time must be in operating hours',
+            );
+          } else {
+            expect(e).toEqual('Appointment time must be in operating hours');
+          }
+        }
+        try {
+          jest
+            .spyOn(salonService, 'findById')
+            .mockResolvedValueOnce(new Salon());
+          jest
+            .spyOn(servicesService, 'findById')
+            .mockResolvedValueOnce(new Service());
+          jest
+            .spyOn(userRepository, 'findOne')
+            .mockResolvedValueOnce(new User());
+          jest
+            .spyOn(service, 'checkSalonOperatingHours')
+            .mockResolvedValueOnce(true);
           jest.spyOn(service, 'checkOverlap').mockResolvedValueOnce(true);
           await service.createAppointment('1', '2', '3', new Date(), '13:00');
         } catch (e) {
@@ -167,38 +214,62 @@ describe('AppointmentsService', () => {
         jest
           .spyOn(userRepository, 'findOne')
           .mockResolvedValueOnce(mockedUserObject);
+        jest
+          .spyOn(service, 'checkConcurrentLimit')
+          .mockResolvedValueOnce(false);
+        jest
+          .spyOn(service, 'checkUserAppointmentLimit')
+          .mockResolvedValueOnce(false);
         jest.spyOn(service, 'checkOverlap').mockResolvedValueOnce(false);
         await service
-          .createAppointment('1', '2', '3', new Date(), '13:00')
+          .createAppointment(
+            '1',
+            '2',
+            '3',
+            new Date('2026-05-11T13:00:00'),
+            '13:00',
+          )
           .then((data) => {
             expect(data.status).toBe(AppointmentStatusEnum.BOOKED);
           });
       });
     });
   });
-  describe('check overlap', () => {
-    it('should throw not found exception', async () => {
-      jest.spyOn(servicesService, 'findById').mockImplementationOnce(jest.fn());
+  describe('findById', () => {
+    it('should throw NotFoundException', async () => {
+      jest
+        .spyOn(appointmentRepository, 'findOne')
+        .mockImplementationOnce(jest.fn());
       try {
-        jest.spyOn(salonService, 'findById').mockImplementationOnce(jest.fn());
+        await service.findById('1');
+      } catch (e) {
+        if (e instanceof Error) {
+          expect(e.message).toEqual('appointment not found!');
+        } else {
+          expect(e).toEqual('appointment not found!');
+        }
+      }
+    });
+    it('should return appointment object', async () => {
+      expect(await service.findById('1')).toEqual(app1);
+    });
+  });
+  describe('check overlap', () => {
+    it('should return false', async () => {
+      jest.spyOn(appointmentRepository, 'find').mockResolvedValueOnce([]);
+      expect(
         await service.checkOverlap(
           '1',
           new Date('2026-03-08T11:00:00'),
           '12:00:00',
           30,
-        );
-      } catch (e) {
-        if (e instanceof Error) {
-          expect(e.message).toEqual('Cannot find service!');
-        } else {
-          expect(e).toEqual('Cannot find service!');
-        }
-      }
+        ),
+      ).toBe(false);
     });
     it('should return true', async () => {
       jest
-        .spyOn(servicesService, 'findById')
-        .mockResolvedValueOnce(mockedServiceObject);
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([app1, app2, app3]);
       expect(
         await service.checkOverlap(
           '1',
@@ -210,8 +281,8 @@ describe('AppointmentsService', () => {
     });
     it('should return true', async () => {
       jest
-        .spyOn(servicesService, 'findById')
-        .mockResolvedValueOnce(mockedServiceObject);
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([app1, app2, app3]);
       expect(
         await service.checkOverlap(
           '1',
@@ -223,8 +294,8 @@ describe('AppointmentsService', () => {
     });
     it('should return false', async () => {
       jest
-        .spyOn(servicesService, 'findById')
-        .mockResolvedValueOnce(mockedServiceObject);
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([app1, app2, app3]);
       expect(
         await service.checkOverlap(
           '1',
@@ -236,8 +307,8 @@ describe('AppointmentsService', () => {
     });
     it('should return false', async () => {
       jest
-        .spyOn(servicesService, 'findById')
-        .mockResolvedValueOnce(mockedServiceObject);
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([app1, app2, app3]);
       expect(
         await service.checkOverlap(
           '1',
@@ -249,28 +320,29 @@ describe('AppointmentsService', () => {
     });
   });
   describe('check concurrent limit', () => {
-    it('should throw not found exception', async () => {
-      try {
-        jest
-          .spyOn(servicesService, 'findById')
-          .mockImplementationOnce(jest.fn());
+    it('should return false', async () => {
+      jest.spyOn(appointmentRepository, 'find').mockResolvedValueOnce([]);
+      expect(
         await service.checkConcurrentLimit(
           '1',
           new Date('2026-03-08T11:00:00'),
           '12:00:00',
-        );
-      } catch (e) {
-        if (e instanceof Error) {
-          expect(e.message).toEqual('Cannot find service!');
-        } else {
-          expect(e).toEqual('Cannot find service!');
-        }
-      }
+        ),
+      ).toBe(false);
     });
     it('should return true', async () => {
       jest
-        .spyOn(servicesService, 'findById')
-        .mockResolvedValueOnce(mockedServiceObjectWithConcurrentLimit);
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([
+          app1,
+          app2,
+          app3,
+          app4,
+          app4,
+          app4,
+          app4,
+          app4,
+        ]);
       expect(
         await service.checkConcurrentLimit(
           '1',
@@ -281,8 +353,17 @@ describe('AppointmentsService', () => {
     });
     it('should return false', async () => {
       jest
-        .spyOn(servicesService, 'findById')
-        .mockResolvedValueOnce(mockedServiceObjectWithConcurrentLimit);
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([
+          app1,
+          app2,
+          app3,
+          app4,
+          app4,
+          app4,
+          app4,
+          app4,
+        ]);
       expect(
         await service.checkConcurrentLimit(
           '1',
@@ -293,33 +374,34 @@ describe('AppointmentsService', () => {
     });
   });
   describe('check user appointment limit', () => {
-    it('should return not found exception', async () => {
-      try {
-        jest.spyOn(userRepository, 'findOne').mockImplementationOnce(jest.fn());
-        await service.checkUserAppointmentLimit('2');
-      } catch (e) {
-        if (e instanceof Error) {
-          expect(e.message).toEqual('Cannot find user!');
-        } else {
-          expect(e).toEqual('Cannot find user!');
-        }
-      }
+    it('should return false', async () => {
+      jest.spyOn(appointmentRepository, 'find').mockResolvedValueOnce([]);
+      expect(await service.checkUserAppointmentLimit('2')).toBe(false);
     });
     it('should return true', async () => {
-      jest.spyOn(userRepository, 'findOne').mockImplementationOnce(
-        jest.fn(async () => {
-          return mockedUserObjectWithAppLimitExceeded;
-        }),
-      );
-      expect(await service.checkUserAppointmentLimit('2')).toEqual(true);
+      jest
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([
+          app1,
+          app2,
+          app3,
+          app4,
+          app1,
+          app2,
+          app3,
+          app4,
+          app1,
+          app2,
+          app6,
+          app5,
+        ]);
+      expect(await service.checkUserAppointmentLimit('2')).toBe(true);
     });
     it('should return false', async () => {
-      jest.spyOn(userRepository, 'findOne').mockImplementationOnce(
-        jest.fn(async () => {
-          return mockedUserObject;
-        }),
-      );
-      expect(await service.checkUserAppointmentLimit('2')).toEqual(false);
+      jest
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([app1, app2, app3, app4]);
+      expect(await service.checkUserAppointmentLimit('2')).toBe(false);
     });
   });
   describe('check salon operating hours', () => {

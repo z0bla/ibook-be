@@ -115,6 +115,7 @@ export class SalonsService {
     // Napravi salon
     const salon = this.salonRepository.create({
       ...rest,
+      appointments: [],
       category,
       rating: 0,
       reviewCount: 0,
