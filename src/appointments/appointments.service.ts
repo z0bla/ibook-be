@@ -279,4 +279,39 @@ export class AppointmentsService {
       await this.usersRepository.save(user);
     }
   }
+
+  async getAndSortAppointments(
+    userId: string,
+  ): Promise<{ upcoming: Appointment[]; past: Appointment[] }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const allAppointments = await this.appointmentRepository.find({
+      where: { user: { id: userId } },
+      relations: ['salon', 'service'],
+    });
+
+    const upcoming = allAppointments
+      .filter(
+        (app) =>
+          app.status === AppointmentStatusEnum.BOOKED &&
+          app.appointmentDate >= today,
+      )
+      .sort(
+        (a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime(),
+      );
+
+    const past = allAppointments
+      .filter(
+        (app) =>
+          app.status === AppointmentStatusEnum.COMPLETED ||
+          (app.status === AppointmentStatusEnum.BOOKED &&
+            app.appointmentDate < today),
+      )
+      .sort(
+        (a, b) => b.appointmentDate.getTime() - a.appointmentDate.getTime(),
+      );
+
+    return { upcoming, past };
+  }
 }
