@@ -452,4 +452,35 @@ describe('AppointmentsService', () => {
       ).toEqual(false);
     });
   });
+
+  describe('addToPreviousSalons', () => {
+    it("should add salon to user's previous salons if not already visited", async () => {
+      const mockUser = { ...mockedUserObject, previousSalons: [] as Salon[] };
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(mockUser);
+      jest
+        .spyOn(salonService, 'findById')
+        .mockResolvedValueOnce(mockedSalonObject);
+
+      await service.addToPreviousSalons('1', 'salonid');
+
+      expect(mockUserRepo.save).toHaveBeenCalled();
+      expect(mockUser.previousSalons).toHaveLength(1);
+      expect(mockUser.previousSalons[0].id).toBe('salonid');
+    });
+
+    it('should not add duplicate salon if already visited', async () => {
+      const mockUser = {
+        ...mockedUserObject,
+        previousSalons: [mockedSalonObject] as Salon[],
+      };
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(mockUser);
+
+      await service.addToPreviousSalons('1', 'salonid');
+
+      expect(mockUserRepo.save).not.toHaveBeenCalled();
+      expect(mockUser.previousSalons).toHaveLength(1);
+    });
+  });
 });
