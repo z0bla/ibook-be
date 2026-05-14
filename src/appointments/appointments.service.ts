@@ -249,4 +249,12 @@ export class AppointmentsService {
     //Vracanje kompletnog stringa u formatu HH:MM
     return `${stringHours}:${stringMinutes}`;
   }
+
+  async getUserAppointments(userId: string): Promise<Appointment[]> {
+    return this.appointmentRepository.find({
+      where: { user: { id: userId } },
+      relations: ['salon', 'service'],
+      order: { appointmentDate: 'DESC' },
+    });
+  }
 }
