@@ -95,6 +95,7 @@ export class AppointmentsService {
     });
     //Snimanje appointment objekta u repo
     await this.appointmentRepository.save(newApp);
+    await this.addToPreviousSalons(userId, salonId);
     return newApp;
   }
   async findById(id: string): Promise<Appointment> {
@@ -265,7 +266,7 @@ export class AppointmentsService {
     });
 
     if (!user) {
-      throw new NotFoundException('Cannot find user');
+      throw new NotFoundException('Cannot find user!');
     }
 
     const alreadyVisited = user.previousSalons?.some(
