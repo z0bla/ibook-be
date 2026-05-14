@@ -46,8 +46,9 @@ describe('AppointmentsService', () => {
   };
   const mockUserRepo = {
     findOne: jest.fn(() => {
-      return mockedUserObject;
+      return { ...mockedUserObject, previousSalons: [] };
     }),
+    save: jest.fn((user: User) => user),
   };
   const mockAppRepo = {
     create: jest.fn((dto) => {
