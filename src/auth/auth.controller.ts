@@ -138,8 +138,8 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(JwtAuthGurad)
-  getCurrentUser(@CurrentUser() user: User) {
-    return user;
+  async getCurrentUser(@CurrentUser() user: User) {
+    return this.authService.getUserProfile(user.id);
   }
 
   @Get('profile')

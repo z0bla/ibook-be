@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +13,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { PasswordValidationService } from './password-validation.service';
 import { generateJWT, hashPassword, validatePassword } from './auth.utils';
+import { AppointmentStatusEnum } from '../common/enums/appointment-status.enum';
 
 @Injectable()
 export class AuthService {
@@ -135,5 +137,40 @@ export class AuthService {
 
     const { id, email, name, phone } = user;
     return { id, email, name, phone };
+  }
+
+  async getUserProfile(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: [
+        'previousSalons',
+        'appointments',
+        'appointments.salon',
+        'appointments.service',
+      ],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const activeAppointments = user.appointments.filter(
+      (app) =>
+        app.status === AppointmentStatusEnum.BOOKED &&
+        app.appointmentDate >= today,
+    );
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      createdAt: user.createdAt,
+      appointments: activeAppointments,
+      previousSalons: user.previousSalons,
+    };
   }
 }
