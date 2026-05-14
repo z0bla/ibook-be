@@ -257,4 +257,25 @@ export class AppointmentsService {
       order: { appointmentDate: 'DESC' },
     });
   }
+
+  async addToPreviousSalons(userId: string, salonId: string): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['previousSalons'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Cannot find user');
+    }
+
+    const alreadyVisited = user.previousSalons?.some(
+      (salon) => salon.id === salonId,
+    );
+
+    if (!alreadyVisited) {
+      const salon = await this.salonService.findById(salonId);
+      user.previousSalons.push(salon);
+      await this.usersRepository.save(user);
+    }
+  }
 }
