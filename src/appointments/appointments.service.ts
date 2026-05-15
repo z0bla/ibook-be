@@ -363,4 +363,23 @@ export class AppointmentsService {
 
     return { data, total };
   }
+
+  async getCancelledAppointments(
+    userId: string,
+    limit: number = 10,
+    offset: number = 0,
+  ): Promise<{ data: Appointment[]; total: number }> {
+    const [data, total] = await this.appointmentRepository.findAndCount({
+      where: {
+        user: { id: userId },
+        status: AppointmentStatusEnum.CANCELLED,
+      },
+      relations: ['salon', 'salon.category', 'service'],
+      order: { updatedAt: 'DESC' },
+      take: limit,
+      skip: offset,
+    });
+
+    return { data, total };
+  }
 }
