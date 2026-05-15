@@ -46,8 +46,9 @@ describe('AppointmentsService', () => {
   };
   const mockUserRepo = {
     findOne: jest.fn(() => {
-      return mockedUserObject;
+      return { ...mockedUserObject, previousSalons: [] };
     }),
+    save: jest.fn((user: User) => user),
   };
   const mockAppRepo = {
     create: jest.fn((dto) => {
@@ -449,6 +450,91 @@ describe('AppointmentsService', () => {
           30,
         ),
       ).toEqual(false);
+    });
+  });
+
+  describe('addToPreviousSalons', () => {
+    it("should add salon to user's previous salons if not already visited", async () => {
+      const mockUser = { ...mockedUserObject, previousSalons: [] as Salon[] };
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(mockUser);
+      jest
+        .spyOn(salonService, 'findById')
+        .mockResolvedValueOnce(mockedSalonObject);
+
+      await service.addToPreviousSalons('1', 'salonid');
+
+      expect(mockUserRepo.save).toHaveBeenCalled();
+      expect(mockUser.previousSalons).toHaveLength(1);
+      expect(mockUser.previousSalons[0].id).toBe('salonid');
+    });
+
+    it('should not add duplicate salon if already visited', async () => {
+      const mockUser = {
+        ...mockedUserObject,
+        previousSalons: [mockedSalonObject] as Salon[],
+      };
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(mockUser);
+
+      await service.addToPreviousSalons('1', 'salonid');
+
+      expect(mockUserRepo.save).not.toHaveBeenCalled();
+      expect(mockUser.previousSalons).toHaveLength(1);
+    });
+  });
+
+  describe('getAndSortAppointments', () => {
+    it('should return empty array when user has no appointments', async () => {
+      jest.spyOn(appointmentRepository, 'find').mockResolvedValueOnce([]);
+
+      const result = await service.getAndSortAppointments('1');
+
+      expect(result.upcoming).toEqual([]);
+      expect(result.past).toEqual([]);
+    });
+
+    it('should correctly separate upcoming and past appointments', async () => {
+      const today = new Date();
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + 10);
+      const pastDate = new Date(today);
+      pastDate.setDate(today.getDate() - 10);
+
+      const futureApp: Appointment = {
+        ...app1,
+        id: 'future-1',
+        appointmentDate: futureDate,
+        appointmentTime: '10:00',
+        status: AppointmentStatusEnum.BOOKED,
+      };
+
+      const pastBookedApp: Appointment = {
+        ...app1,
+        id: 'past-booked-1',
+        appointmentDate: pastDate,
+        appointmentTime: '10:00',
+        status: AppointmentStatusEnum.BOOKED,
+      };
+
+      const pastCompletedApp: Appointment = {
+        ...app1,
+        id: 'past-completed-1',
+        appointmentDate: pastDate,
+        appointmentTime: '10:00',
+        status: AppointmentStatusEnum.COMPLETED,
+      };
+
+      jest
+        .spyOn(appointmentRepository, 'find')
+        .mockResolvedValueOnce([futureApp, pastBookedApp, pastCompletedApp]);
+
+      const result = await service.getAndSortAppointments('1');
+
+      expect(result.upcoming).toHaveLength(1);
+      expect(result.upcoming[0].id).toBe('future-1');
+      expect(result.past).toHaveLength(2);
+      expect(result.past[0].id).toBe('past-booked-1');
     });
   });
 });

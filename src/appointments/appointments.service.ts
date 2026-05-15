@@ -95,6 +95,7 @@ export class AppointmentsService {
     });
     //Snimanje appointment objekta u repo
     await this.appointmentRepository.save(newApp);
+    await this.addToPreviousSalons(userId, salonId);
     return newApp;
   }
   async findById(id: string): Promise<Appointment> {
@@ -248,5 +249,69 @@ export class AppointmentsService {
     }
     //Vracanje kompletnog stringa u formatu HH:MM
     return `${stringHours}:${stringMinutes}`;
+  }
+
+  async getUserAppointments(userId: string): Promise<Appointment[]> {
+    return this.appointmentRepository.find({
+      where: { user: { id: userId } },
+      relations: ['salon', 'service'],
+      order: { appointmentDate: 'DESC' },
+    });
+  }
+
+  async addToPreviousSalons(userId: string, salonId: string): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['previousSalons'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Cannot find user!');
+    }
+
+    const alreadyVisited = user.previousSalons?.some(
+      (salon) => salon.id === salonId,
+    );
+
+    if (!alreadyVisited) {
+      const salon = await this.salonService.findById(salonId);
+      user.previousSalons.push(salon);
+      await this.usersRepository.save(user);
+    }
+  }
+
+  async getAndSortAppointments(
+    userId: string,
+  ): Promise<{ upcoming: Appointment[]; past: Appointment[] }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const allAppointments = await this.appointmentRepository.find({
+      where: { user: { id: userId } },
+      relations: ['salon', 'service'],
+    });
+
+    const upcoming = allAppointments
+      .filter(
+        (app) =>
+          app.status === AppointmentStatusEnum.BOOKED &&
+          app.appointmentDate >= today,
+      )
+      .sort(
+        (a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime(),
+      );
+
+    const past = allAppointments
+      .filter(
+        (app) =>
+          app.status === AppointmentStatusEnum.COMPLETED ||
+          (app.status === AppointmentStatusEnum.BOOKED &&
+            app.appointmentDate < today),
+      )
+      .sort(
+        (a, b) => b.appointmentDate.getTime() - a.appointmentDate.getTime(),
+      );
+
+    return { upcoming, past };
   }
 }
