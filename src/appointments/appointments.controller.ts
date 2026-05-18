@@ -17,6 +17,7 @@ import { CreateAppointmentDto } from './dto/createAppointmentDto';
 import { Repository } from 'typeorm';
 import { AppointmentStatusEnum } from '../common/enums/appointment-status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AppointmentWithRelationsDto } from './dto/appointment-with-relations.dto';
 
 @ApiTags('Appointments')
 @Controller('appointments')
@@ -104,5 +105,37 @@ export class AppointmentsController {
       status: AppointmentStatusEnum.CANCELLED,
     });
     return 'Appointment cancelled succesfully';
+  }
+
+  toAppointmentWithRelationsDto(
+    appointment: Appointment,
+  ): AppointmentWithRelationsDto {
+    return {
+      id: appointment.id,
+      userId: appointment.user.id,
+      appointmentDate: appointment.appointmentDate,
+      appointmentTime: appointment.appointmentTime,
+      duration: appointment.duration,
+      status: appointment.status,
+      salon: {
+        id: appointment.salon.id,
+        name: appointment.salon.name,
+        address: appointment.salon.address,
+        phone: appointment.salon.phone,
+        image: appointment.salon.image,
+        rating: appointment.salon.rating,
+      },
+      service: {
+        id: appointment.service.id,
+        name: appointment.service.name,
+        duration: appointment.service.duration,
+        price: appointment.service.price,
+      },
+      category: {
+        id: appointment.salon.category.id,
+        name: appointment.salon.category.name,
+        icon: appointment.salon.category.icon,
+      },
+    };
   }
 }
