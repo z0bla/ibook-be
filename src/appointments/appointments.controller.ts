@@ -6,9 +6,16 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AppointmentsService } from './appointments.service';
 import { Appointment } from './entities/appointment.entity';
 import { AppointmentResponseDto } from './dto/appointmentResponseDto';
@@ -18,6 +25,10 @@ import { Repository } from 'typeorm';
 import { AppointmentStatusEnum } from '../common/enums/appointment-status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppointmentWithRelationsDto } from './dto/appointment-with-relations.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { PaginationDto } from './dto/pagination.dto';
+import { PaginatedAppointmentResponseDto } from './dto/paginated-appointment-response.dto';
+import { User } from '../users/entities/user.entity';
 
 @ApiTags('Appointments')
 @Controller('appointments')
@@ -27,6 +38,31 @@ export class AppointmentsController {
     @InjectRepository(Appointment)
     private readonly appointmentRepo: Repository<Appointment>,
   ) {}
+
+  @UseGuards(JwtAuthGurad)
+  @Get('upcoming')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get user's upcoming appointments" })
+  @ApiResponse({ status: 200, description: 'Returned upcoming appointments ' })
+  @ApiResponse({ status: 401, description: 'Not authorized' })
+  async getUpcoming(
+    @CurrentUser() user: User,
+    @Query() pagination: PaginationDto,
+  ): Promise<PaginatedAppointmentResponseDto> {
+    const limit = pagination.limit ?? 10;
+    const offset = pagination.offset ?? 0;
+    const result = await this.appointmentsService.getUpcomingAppointments(
+      user.id,
+      limit,
+      offset,
+    );
+    return {
+      data: result.data.map((app) => this.toAppointmentWithRelationsDto(app)),
+      total: result.total,
+      hasMore: offset + limit < result.total,
+    };
+  }
+
   @UseGuards(JwtAuthGurad)
   @Get(':id')
   @ApiOperation({ summary: 'Get one appointment with the specified id' })
@@ -92,6 +128,7 @@ export class AppointmentsController {
       dto.appointmentTime,
     );
   }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Soft delete an appointment with the given id' })
   @ApiResponse({ status: 401, description: 'Not authorized' })
