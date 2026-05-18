@@ -64,6 +64,30 @@ export class AppointmentsController {
   }
 
   @UseGuards(JwtAuthGurad)
+  @Get('past')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get user's past appointments" })
+  @ApiResponse({ status: 200, description: 'Returned past appointments ' })
+  @ApiResponse({ status: 401, description: 'Not authorized' })
+  async getPast(
+    @CurrentUser() user: User,
+    @Query() pagination: PaginationDto,
+  ): Promise<PaginatedAppointmentResponseDto> {
+    const limit = pagination.limit ?? 10;
+    const offset = pagination.offset ?? 0;
+    const result = await this.appointmentsService.getPastAppointments(
+      user.id,
+      limit,
+      offset,
+    );
+    return {
+      data: result.data.map((app) => this.toAppointmentWithRelationsDto(app)),
+      total: result.total,
+      hasMore: offset + limit < result.total,
+    };
+  }
+
+  @UseGuards(JwtAuthGurad)
   @Get(':id')
   @ApiOperation({ summary: 'Get one appointment with the specified id' })
   @ApiResponse({ status: 200, description: 'Returned the appointment' })
