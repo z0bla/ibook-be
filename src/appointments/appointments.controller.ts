@@ -88,6 +88,30 @@ export class AppointmentsController {
   }
 
   @UseGuards(JwtAuthGurad)
+  @Get('cancelled')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get user's cancelled appointments" })
+  @ApiResponse({ status: 200, description: 'Returned cancelled appointments ' })
+  @ApiResponse({ status: 401, description: 'Not authorized' })
+  async getCancelled(
+    @CurrentUser() user: User,
+    @Query() pagination: PaginationDto,
+  ): Promise<PaginatedAppointmentResponseDto> {
+    const limit = pagination.limit ?? 10;
+    const offset = pagination.offset ?? 0;
+    const result = await this.appointmentsService.getCancelledAppointments(
+      user.id,
+      limit,
+      offset,
+    );
+    return {
+      data: result.data.map((app) => this.toAppointmentWithRelationsDto(app)),
+      total: result.total,
+      hasMore: offset + limit < result.total,
+    };
+  }
+
+  @UseGuards(JwtAuthGurad)
   @Get(':id')
   @ApiOperation({ summary: 'Get one appointment with the specified id' })
   @ApiResponse({ status: 200, description: 'Returned the appointment' })
