@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual, LessThan } from 'typeorm';
 import { SalonsService } from '../salons/salons.service';
 import { ServicesService } from '../services/services.service';
 import { DayEnum } from '../common/enums/day.enum';
@@ -313,5 +313,73 @@ export class AppointmentsService {
       );
 
     return { upcoming, past };
+  }
+
+  async getUpcomingAppointments(
+    userId: string,
+    limit: number = 10,
+    offset: number = 0,
+  ): Promise<{ data: Appointment[]; total: number }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [data, total] = await this.appointmentRepository.findAndCount({
+      where: {
+        user: { id: userId },
+        status: AppointmentStatusEnum.BOOKED,
+        appointmentDate: MoreThanOrEqual(today),
+      },
+      relations: ['salon', 'salon.category', 'service'],
+      order: { appointmentDate: 'ASC', appointmentTime: 'ASC' },
+      take: limit,
+      skip: offset,
+    });
+
+    return { data, total };
+  }
+
+  async getPastAppointments(
+    userId: string,
+    limit: number = 10,
+    offset: number = 0,
+  ): Promise<{ data: Appointment[]; total: number }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [data, total] = await this.appointmentRepository.findAndCount({
+      where: [
+        { user: { id: userId }, status: AppointmentStatusEnum.COMPLETED },
+        {
+          user: { id: userId },
+          status: AppointmentStatusEnum.BOOKED,
+          appointmentDate: LessThan(today),
+        },
+      ],
+      relations: ['salon', 'salon.category', 'service'],
+      order: { appointmentDate: 'DESC', appointmentTime: 'DESC' },
+      take: limit,
+      skip: offset,
+    });
+
+    return { data, total };
+  }
+
+  async getCancelledAppointments(
+    userId: string,
+    limit: number = 10,
+    offset: number = 0,
+  ): Promise<{ data: Appointment[]; total: number }> {
+    const [data, total] = await this.appointmentRepository.findAndCount({
+      where: {
+        user: { id: userId },
+        status: AppointmentStatusEnum.CANCELLED,
+      },
+      relations: ['salon', 'salon.category', 'service'],
+      order: { updatedAt: 'DESC' },
+      take: limit,
+      skip: offset,
+    });
+
+    return { data, total };
   }
 }
